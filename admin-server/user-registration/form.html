@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #e6f2f8;
+        padding: 40px;
+        color: #333;
+      }
+
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        color: #0077b6;
+        margin-bottom: 5px;
+      }
+
+      p.description {
+        text-align: center;
+        color: #555;
+        margin-bottom: 30px;
+      }
+
+      label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+      }
+
+      button {
+        margin-top: 25px;
+        padding: 12px;
+        width: 100%;
+        background-color: #00aaff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      button:hover:enabled {
+        background-color: #0077b6;
+      }
+
+      .error {
+        color: red;
+        margin-top: 5px;
+        font-size: 0.9em;
+      }
+
+      #resultMessage {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>新規ユーザー登録</h1>
+      <p class="description">MPRGのサーバーを使用する際のユーザー名の希望調査です</p>
+
+      <label for="kubun">区分:</label>
+      <select id="kubun">
+        <option>B4</option>
+        <option>M1</option>
+        <option>M2</option>
+        <option>D1</option>
+        <option>D2</option>
+        <option>D3</option>
+        <option>other</option>
+      </select>
+
+      <label for="accountName">希望アカウント名（重複の場合登録できません）:</label>
+      <input type="text" id="accountName">
+      <div id="accountError" class="error"></div>
+
+      <label for="fullName">氏名:</label>
+      <input type="text" id="fullName" placeholder="山田 太郎">
+
+      <label for="slackId">Slack ID:</label>
+      <input type="text" id="slackId" value="@" />
+
+      <button id="submitBtn" onclick="submitForm()" disabled>登録</button>
+
+      <div id="resultMessage"></div>
+    </div>
+
+    <script>
+      let existingAccounts = [];
+
+      window.onload = () => {
+        google.script.run.withSuccessHandler(accounts => {
+          existingAccounts = accounts;
+        }).getExistingAccounts();
+
+        // 入力イベントの登録
+        ["accountName", "fullName", "slackId"].forEach(id => {
+          document.getElementById(id).addEventListener("input", validateForm);
+        });
+        document.getElementById("kubun").addEventListener("change", validateForm);
+      };
+
+      function validateForm() {
+        const account = document.getElementById("accountName").value.trim();
+        const fullName = document.getElementById("fullName").value.trim();
+        const slackId = document.getElementById("slackId").value.trim();
+        const errorDiv = document.getElementById("accountError");
+        const submitBtn = document.getElementById("submitBtn");
+        const regex = /^[a-zA-Z0-9]+$/;
+
+        if (!account) {
+          errorDiv.textContent = "希望アカウント名を入力してください。";
+          submitBtn.disabled = true;
+          return;
+        }
+
+        if (!regex.test(account)) {
+          errorDiv.textContent = "英数字のみ使用できます。";
+          submitBtn.disabled = true;
+          return;
+        }
+
+        if (existingAccounts.includes(account)) {
+          errorDiv.textContent = "このアカウント名は既に登録されています。";
+          submitBtn.disabled = true;
+          return;
+        }
+
+        if (!fullName) {
+          errorDiv.textContent = "";
+          submitBtn.disabled = true;
+          return;
+        }
+
+        if (!slackId || slackId === "@") {
+          errorDiv.textContent = "";
+          submitBtn.disabled = true;
+          return;
+        }
+
+        // すべてのチェックを通過
+        errorDiv.textContent = "";
+        submitBtn.disabled = false;
+      }
+
+      function submitForm() {
+        const data = {
+          kubun: document.getElementById("kubun").value,
+          accountName: document.getElementById("accountName").value.trim(),
+          fullName: document.getElementById("fullName").value.trim(),
+          slackId: document.getElementById("slackId").value.trim()
+        };
+
+        google.script.run.withSuccessHandler(() => {
+          document.getElementById("resultMessage").textContent = "登録が完了しました！ページを閉じてください．";
+          document.getElementById("submitBtn").disabled = true;
+        }).registerUser(data);
+      }
+    </script>
+  </body>
+</html>
