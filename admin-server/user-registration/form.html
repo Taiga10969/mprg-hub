@@ -145,38 +145,64 @@
         const slackId = document.getElementById("slackId").value.trim();
         const errorDiv = document.getElementById("accountError");
         const submitBtn = document.getElementById("submitBtn");
-        const regex = /^[a-zA-Z0-9]+$/;
-
+      
+        // 基本的な構造: 英小文字/数字/ハイフンのみ、先頭は小文字
+        const validPattern = /^[a-z][a-z0-9-]*$/;
+      
         if (!account) {
           errorDiv.textContent = "希望アカウント名を入力してください。";
           submitBtn.disabled = true;
           return;
         }
-
-        if (!regex.test(account)) {
-          errorDiv.textContent = "英数字のみ使用できます。";
+      
+        if (!validPattern.test(account)) {
+          errorDiv.textContent = "アカウント名は英小文字、数字、ハイフン（-）のみ使用可能で、先頭は英小文字で始めてください。";
           submitBtn.disabled = true;
           return;
         }
-
+      
+        if (/[A-Z]/.test(account)) {
+          errorDiv.textContent = "大文字は使用できません。すべて小文字にしてください。";
+          submitBtn.disabled = true;
+          return;
+        }
+      
+        if (/--/.test(account)) {
+          errorDiv.textContent = "ハイフン（-）を連続して使用することはできません。";
+          submitBtn.disabled = true;
+          return;
+        }
+      
+        if (account.startsWith("-") || account.endsWith("-")) {
+          errorDiv.textContent = "アカウント名の先頭または末尾にハイフン（-）を使用することはできません。";
+          submitBtn.disabled = true;
+          return;
+        }
+      
+        if (/[^a-z0-9-]/.test(account)) {
+          errorDiv.textContent = "英小文字、数字、ハイフン（-）以外の文字（例: アンダースコア、ピリオド）は使用できません。";
+          submitBtn.disabled = true;
+          return;
+        }
+      
         if (existingAccounts.includes(account)) {
           errorDiv.textContent = "このアカウント名は既に登録されています。";
           submitBtn.disabled = true;
           return;
         }
-
+      
         if (!fullName) {
           errorDiv.textContent = "";
           submitBtn.disabled = true;
           return;
         }
-
+      
         if (!slackId || slackId === "@") {
           errorDiv.textContent = "";
           submitBtn.disabled = true;
           return;
         }
-
+      
         // すべてのチェックを通過
         errorDiv.textContent = "";
         submitBtn.disabled = false;
