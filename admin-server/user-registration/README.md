@@ -1,6 +1,7 @@
 # 新規ユーザー登録フォーム（MPRG サーバー係用）
 
 このHTMLファイルは，MPRGのサーバー利用者向けに，新規ユーザーの登録希望を受け付けるためのGoogle Apps Script（GAS）と連携するWebフォームです．
+<img width="1313" alt="スクリーンショット 2025-03-26 午前9 25 14" src="https://github.com/user-attachments/assets/50e5a8d7-6491-4d5c-9b67-3d6c14d42503" />
 
 
 ## 📋 概要
